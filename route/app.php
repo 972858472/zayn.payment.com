@@ -17,3 +17,5 @@ Route::get('think', function () {
 Route::get('hello/:name', 'index/hello');
 
 Route::get('order', 'order/index');
+Route::get('wx_pay', 'order/wx_pay');
+Route::get('zfb_pay', 'order/zfb_pay');

@@ -3,6 +3,7 @@
 namespace app\controller;
 
 use Alipay\EasySDK\Kernel\Config;
+use Alipay\EasySDK\Kernel\Util\ResponseChecker;
 use app\BaseController;
 use EasyWeChat\Factory;
 use think\facade\Request;
@@ -20,11 +21,11 @@ class Order extends BaseController
     public function index()
     {
         if (!$data['user_id'] = Request::get('user_id')) {
-            return '用户ID';
+            return '用户ID不能为空';
         }
         $data['amount'] = Request::get('amount');
         $data['pay_type'] = Request::get('pay_type');
-        return view('index', $data);
+        return view('', $data);
     }
 
     public function wx_pay()
@@ -68,7 +69,13 @@ class Order extends BaseController
         $user_id = Request::get('user_id');
         \Alipay\EasySDK\Kernel\Factory::setOptions($this->getOptions());
         $result = \Alipay\EasySDK\Kernel\Factory::payment()->common()->create('房卡', $order_id, $amount, $user_id);
-        dd($result);
+        $responseChecker = new ResponseChecker();
+        //3. 处理响应或异常
+        if ($responseChecker->success($result)) {
+            echo "调用成功". PHP_EOL;
+        } else {
+            echo "调用失败，原因：". $result->msg."，".$result->subMsg.PHP_EOL;
+        }
     }
 
     public function getOptions()
@@ -81,7 +88,7 @@ class Order extends BaseController
         $options->appId = self::ALI_APP_ID;
 
         // 为避免私钥随源码泄露，推荐从文件中读取私钥字符串而不是写入源码中
-        //$options->merchantPrivateKey = '<-- 请填写您的应用私钥，例如：MIIEvQIBADANB ... ... -->';
+        $options->merchantPrivateKey = '<-- 请填写您的应用私钥，例如：MIIEvQIBADANB ... ... -->';
 
         //$options->alipayCertPath = '<-- 请填写您的支付宝公钥证书文件路径，例如：/foo/alipayCertPublicKey_RSA2.crt -->';
         //$options->alipayRootCertPath = '<-- 请填写您的支付宝根证书文件路径，例如：/foo/alipayRootCert.crt" -->';

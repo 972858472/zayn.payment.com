@@ -88,7 +88,7 @@ class Order extends BaseController
         $options->appId = self::ALI_APP_ID;
 
         // 为避免私钥随源码泄露，推荐从文件中读取私钥字符串而不是写入源码中
-        $options->merchantPrivateKey = '<-- 请填写您的应用私钥，例如：MIIEvQIBADANB ... ... -->';
+        $options->merchantPrivateKey = 'ULAqRJxYOIWeQrKleNiMexgt8r7L4g2l';
 
         //$options->alipayCertPath = '<-- 请填写您的支付宝公钥证书文件路径，例如：/foo/alipayCertPublicKey_RSA2.crt -->';
         //$options->alipayRootCertPath = '<-- 请填写您的支付宝根证书文件路径，例如：/foo/alipayRootCert.crt" -->';

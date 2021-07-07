@@ -32,8 +32,7 @@
     },
     "autoload": {
         "psr-4": {
-            "app\\": "app",
-            "Alipay\\": "extend/alipay/src"
+            "app\\": "app"
         },
         "psr-0": {
             "": "extend/"

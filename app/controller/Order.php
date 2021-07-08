@@ -112,9 +112,9 @@ class Order extends BaseController
         try {
             $result = \Alipay\EasySDK\Kernel\Factory::payment()
                 ->wap()
-                ->asyncNotify('')
+                ->asyncNotify($this->request->domain() . '/zfb_notify')
                 ->optional('passback_params', $user_id)
-                ->pay('商超-乐果', $order_id, $amount * 100, $this->request->domain() . '/zfb_notify', '');
+                ->pay('商超-乐果', $order_id, $amount, $this->request->domain() . '/order?user_id=' . $user_id, '');
             $responseChecker = new ResponseChecker();
             //3. 处理响应或异常
             if ($responseChecker->success($result)) {
@@ -177,6 +177,7 @@ class Order extends BaseController
             $response = $app->handlePaidNotify(function ($message, $fail) {
                 Log::info('微信回调开始：');
                 Log::info($message);
+                $cost = $message['total_fee'] / 100;
                 $this->sendServer([
                     //玩具ID
                     "playerid" => $message['attach'] ?? 0,
@@ -186,9 +187,9 @@ class Order extends BaseController
                     //固定值
                     "currency" => 100,
                     //房卡数量
-                    "amount"   => self::CARD_CONFIG[(int)$message['total_fee']],
+                    "amount"   => self::CARD_CONFIG[$cost],
                     //支付金额
-                    "cost"     => $message['total_fee'] ?? 0
+                    "cost"     => $cost ?? 0
                 ]);
                 return true;
             });

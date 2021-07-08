@@ -10,12 +10,14 @@
 // +----------------------------------------------------------------------
 use think\facade\Route;
 
-Route::get('think', function () {
-    return 'hello,ThinkPHP6!';
+Route::get('/', function () {
+    return 'bad request';
 });
 
-Route::get('hello/:name', 'index/hello');
+//Route::get('hello/:name', 'index/hello');
 
 Route::get('order', 'order/index');
 Route::get('wx_pay', 'order/wx_pay');
 Route::get('zfb_pay', 'order/zfb_pay');
+Route::post('wx_notify', 'order/wx_notify');
+Route::post('zfb_notify', 'order/zfb_notify');

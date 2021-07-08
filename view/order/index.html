@@ -5,10 +5,11 @@
     <title>充值</title>
     <!-- 引入样式文件 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vant@2.12/lib/index.css"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
 </head>
 <body>
 <div id="app">
-    <van-form style="width: 380px;margin: auto">
+    <van-form style="width: 340px;margin: auto">
         <van-row type="flex" justify="space-between">
             <van-button class="button product" :plain="index != form.amount" type="danger"
                         v-for="(desc,index) in amount_config"
@@ -113,13 +114,14 @@
 
     .button {
         width: 85px;
-        margin: 15px 10px 0 0;
+        margin: 15px 5px 0 0;
     }
 
     .button.product {
-        width: 115px;
+        width: 110px;
         height: 56px;
         margin-right: 0;
+        font-size: 12px;
     }
 
     .van-button--danger {

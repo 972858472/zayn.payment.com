@@ -9,7 +9,7 @@
 <body>
 <div id="app">
     <van-form style="width: 380px;margin: auto">
-        <van-row type="flex">
+        <van-row type="flex" justify="space-between">
             <van-button class="button product" :plain="index != form.amount" type="danger"
                         v-for="(desc,index) in amount_config"
                         @click="changeAmount(index)">{{desc}}
@@ -119,6 +119,7 @@
     .button.product {
         width: 115px;
         height: 56px;
+        margin-right: 0;
     }
 
     .van-button--danger {

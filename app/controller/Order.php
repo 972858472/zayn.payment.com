@@ -10,6 +10,7 @@ use EasyWeChat\Kernel\Exceptions\InvalidArgumentException;
 use EasyWeChat\Kernel\Exceptions\InvalidConfigException;
 use EasyWeChat\Payment\Application;
 use Exception;
+use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use think\facade\Log;
 use think\facade\Request;
@@ -26,13 +27,21 @@ class Order extends BaseController
     const ALI_APP_ID = '2019032563707127';
     const ALI_PID = '2088921324464100';
 
+    const CARD_CONFIG = [
+        100  => 1000,
+        300  => 3000,
+        500  => 5000,
+        1000 => 10000
+    ];
+
     public function index()
     {
         if (!$data['user_id'] = Request::get('user_id')) {
             return '用户ID不能为空';
         }
-        $data['amount'] = Request::get('amount',100);
-        $data['pay_type'] = Request::get('pay_type',1);
+        $data['amount'] = Request::get('amount', 100);
+        $data['pay_type'] = Request::get('pay_type', 1);
+        $data['CARD_CONFIG'] = self::CARD_CONFIG;
         return view('', $data);
     }
 
@@ -66,9 +75,9 @@ class Order extends BaseController
      */
     public function wx_pay()
     {
-        $order_id = 'WX' . date('YmdHis') . rand(1000, 9999);
         $amount = Request::get('amount');
         $user_id = Request::get('user_id');
+        $order_id = 'WX' . date('YmdHis') . $user_id . rand(1000, 9999);
         $app = $this->getWxApp();
         $result = $app->order->unify([
             'body'         => '商超-乐果',
@@ -96,9 +105,9 @@ class Order extends BaseController
      */
     public function zfb_pay()
     {
-        $order_id = 'ALI' . date('YmdHis') . rand(1000, 9999);
         $amount = Request::get('amount');
         $user_id = Request::get('user_id');
+        $order_id = 'ALI' . date('YmdHis') . $user_id . rand(1000, 9999);
         \Alipay\EasySDK\Kernel\Factory::setOptions($this->getAliOptions());
         try {
             $result = \Alipay\EasySDK\Kernel\Factory::payment()
@@ -168,7 +177,19 @@ class Order extends BaseController
             $response = $app->handlePaidNotify(function ($message, $fail) {
                 Log::info('微信回调开始：');
                 Log::info($message);
-                $fail('Order not exists.');
+                $this->sendServer([
+                    //玩具ID
+                    "playerid" => $message['attach'] ?? 0,
+                    "time"     => date('Y-m-d H:i:s'),
+                    //订单号
+                    "serial"   => $message['out_trade_no'] ?? null,
+                    //固定值
+                    "currency" => 100,
+                    //房卡数量
+                    "amount"   => self::CARD_CONFIG[(int)$message['total_fee']],
+                    //支付金额
+                    "cost"     => $message['total_fee'] ?? 0
+                ]);
                 return true;
             });
             $response->send();
@@ -181,6 +202,7 @@ class Order extends BaseController
     /**
      * 支付宝回调
      * @return string
+     * @throws GuzzleException
      * @author zayn
      * @date 2021-07-08
      */
@@ -192,10 +214,41 @@ class Order extends BaseController
             Log::info($post);
             \Alipay\EasySDK\Kernel\Factory::setOptions($this->getAliOptions());
             \Alipay\EasySDK\Kernel\Factory::payment()->common()->verifyNotify($post);
+            $this->sendServer([
+                //玩具ID
+                "playerid" => $post['passback_params'] ?? 0,
+                "time"     => date('Y-m-d H:i:s'),
+                //订单号
+                "serial"   => $post['out_trade_no'] ?? null,
+                //固定值
+                "currency" => 100,
+                //房卡数量
+                "amount"   => self::CARD_CONFIG[(int)$post['total_amount']],
+                //支付金额
+                "cost"     => $post['total_amount'] ?? 0
+            ]);
             return 'success';
         } catch (Exception $e) {
             Log::info('支付宝回调错误：' . $e->getMessage() . ':' . $e->getFile() . ':' . $e->getCode());
             return 'fail';
         }
+    }
+
+    /**
+     * 发送给服务器
+     * @param $data
+     * @throws GuzzleException
+     * @author zayn
+     * @date 2021-07-08
+     */
+    public function sendServer($data)
+    {
+        $client = new Client([
+            'base_url' => 'http://localhost:34001'
+        ]);
+        $response = $client->request('', '/recharge', [
+            'body' => 'businessOrderID=1&parameter=' . json_encode($data, 256)
+        ]);
+        Log::info($response->getBody()->getContents());
     }
 }

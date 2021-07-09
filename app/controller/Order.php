@@ -82,11 +82,12 @@ class Order extends BaseController
         $result = $app->order->unify([
             'body'         => '商超-乐果',
             'out_trade_no' => $order_id,
-            'total_fee'    => $amount * 100,
+            #'total_fee'    => $amount * 100,
+            'total_fee'    => 1,
             //'spbill_create_ip' => '123.12.12.123', // 可选，如不传该参数，SDK 将会自动获取相应 IP 地址
             'notify_url'   => $this->request->domain() . '/wx_notify', // 支付结果通知网址，如果不设置则会使用配置里的默认地址
             'trade_type'   => 'MWEB', // 请对应换成你的支付方式对应的值类型
-            'attach'       => $user_id
+            'attach'       => $user_id . ',' . self::CARD_CONFIG[$amount]
         ]);
         if ($result['return_code'] == 'SUCCESS') {
             if ($result['result_code'] == 'SUCCESS') {
@@ -113,8 +114,8 @@ class Order extends BaseController
             $result = \Alipay\EasySDK\Kernel\Factory::payment()
                 ->wap()
                 ->asyncNotify($this->request->domain() . '/zfb_notify')
-                ->optional('passback_params', $user_id)
-                ->pay('商超-乐果', $order_id, $amount, $this->request->domain() . '/order?user_id=' . $user_id, '');
+                ->optional('passback_params', $user_id . ',' . $amount)
+                ->pay('商超-乐果', $order_id, 0.01, $this->request->domain() . '/order?user_id=' . $user_id, '');
             $responseChecker = new ResponseChecker();
             //3. 处理响应或异常
             if ($responseChecker->success($result)) {
@@ -178,16 +179,17 @@ class Order extends BaseController
                 Log::info('微信回调开始：');
                 Log::info($message);
                 $cost = $message['total_fee'] / 100;
+                $params = explode(',', $message['attach']);
                 $this->sendServer([
                     //玩具ID
-                    "playerid" => $message['attach'] ?? 0,
+                    "playerid" => $params[0] ?? 0,
                     "time"     => date('Y-m-d H:i:s'),
                     //订单号
                     "serial"   => $message['out_trade_no'] ?? null,
                     //固定值
                     "currency" => 100,
                     //房卡数量
-                    "amount"   => self::CARD_CONFIG[$cost] ?? 0,
+                    "amount"   => $params[1] ?? 0,
                     //支付金额
                     "cost"     => $cost ?? 0
                 ]);
@@ -215,16 +217,17 @@ class Order extends BaseController
             Log::info($post);
             \Alipay\EasySDK\Kernel\Factory::setOptions($this->getAliOptions());
             \Alipay\EasySDK\Kernel\Factory::payment()->common()->verifyNotify($post);
+            $params = explode(',', $post['passback_params']);
             $this->sendServer([
                 //玩具ID
-                "playerid" => $post['passback_params'] ?? 0,
+                "playerid" => $params[0] ?? 0,
                 "time"     => date('Y-m-d H:i:s'),
                 //订单号
                 "serial"   => $post['out_trade_no'] ?? null,
                 //固定值
                 "currency" => 100,
                 //房卡数量
-                "amount"   => self::CARD_CONFIG[(int)$post['total_amount']] ?? 0,
+                "amount"   => $params[1] ?? 0,
                 //支付金额
                 "cost"     => $post['total_amount'] ?? 0
             ]);

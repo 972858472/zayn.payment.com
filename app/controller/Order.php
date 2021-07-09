@@ -187,7 +187,8 @@ class Order extends BaseController
                     //固定值
                     "currency" => 100,
                     //房卡数量
-                    "amount"   => self::CARD_CONFIG[$cost] ?? 0,
+                    //"amount"   => self::CARD_CONFIG[$cost] ?? 0,
+                    "amount"   => 0,
                     //支付金额
                     "cost"     => $cost ?? 0
                 ]);
@@ -224,7 +225,8 @@ class Order extends BaseController
                 //固定值
                 "currency" => 100,
                 //房卡数量
-                "amount"   => self::CARD_CONFIG[(int)$post['total_amount']] ?? 0,
+                //"amount"   => self::CARD_CONFIG[(int)$post['total_amount']] ?? 0,
+                "amount"   => 0,
                 //支付金额
                 "cost"     => $post['total_amount'] ?? 0
             ]);
@@ -244,10 +246,8 @@ class Order extends BaseController
      */
     public function sendServer($data)
     {
-        $client = new Client([
-            'base_url' => 'http://localhost:34001'
-        ]);
-        $response = $client->request('', '/recharge', [
+        $client = new Client();
+        $response = $client->request('POST', 'http://66.66.11.20:34001/recharge', [
             'body' => 'businessOrderID=1&parameter=' . json_encode($data, 256)
         ]);
         Log::info($response->getBody()->getContents());

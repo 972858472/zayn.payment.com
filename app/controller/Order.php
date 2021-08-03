@@ -27,11 +27,20 @@ class Order extends BaseController
     const ALI_APP_ID = '2019032563707127';
     const ALI_PID = '2088921324464100';
 
+    //wangzhelianmeng
+    const WZLM_PAY_GATEWAY = '103.126.249.138:40008/api/gw';
+    const WZLM_MCH_ID = 'wangzhe';
+    const WZLM_KEY = '3a07';
+
     const CARD_CONFIG = [
-        100  => 1000,
-        300  => 3000,
-        500  => 5000,
-        1000 => 10000
+        300   => 300,
+        500   => 500,
+        800   => 800,
+        1000  => 1000,
+        2000  => 2000,
+        5000  => 5000,
+        8000  => 8000,
+        10000 => 10000
     ];
 
     public function index()
@@ -39,8 +48,13 @@ class Order extends BaseController
         if (!$data['user_id'] = Request::get('user_id')) {
             return '用户ID不能为空';
         }
-        $data['amount'] = Request::get('amount', 100);
-        $data['pay_type'] = Request::get('pay_type', 1);
+        $data['amount'] = Request::get('amount', 300);
+        $contents = $this->getWZLMPayList();
+        $contents = json_decode($contents, true);
+        if ($contents['code'] != 0) {
+            return $contents['msg'];
+        }
+        $data['pay_type'] = $contents['data'];
         $data['CARD_CONFIG'] = self::CARD_CONFIG;
         return view('', $data);
     }
@@ -252,5 +266,105 @@ class Order extends BaseController
             'body' => 'businessOrderID=1&parameter=' . json_encode($data, 256)
         ]);
         Log::info($response->getBody()->getContents());
+    }
+
+    /**
+     * 获取王者联盟支付类型列表
+     * @return string
+     * @throws GuzzleException
+     */
+    public function getWZLMPayList(): string
+    {
+        $client = new Client();
+        $params = [
+            'partner'   => self::WZLM_MCH_ID,
+            'timestamp' => time()
+        ];
+        $response = $client->request('POST', self::WZLM_PAY_GATEWAY, [
+            'json' => [
+                'method' => 'payway',
+                'param'  => $this->getWZLMSign($params),
+            ]
+        ]);
+        return $response->getBody()->getContents();
+    }
+
+    /**
+     * 获取王者联盟的签名
+     * @param array $params
+     * @param bool $isStr
+     * @return array|string
+     */
+    public function getWZLMSign(array $params, bool $isStr = false)
+    {
+        ksort($params);
+        $params['sign'] = md5(http_build_query($params) . self::WZLM_KEY);
+        if (!$isStr) {
+            return $params['sign'];
+        }
+        return $params;
+    }
+
+    public function wzlm_pay()
+    {
+        $amount = Request::get('amount');
+        $user_id = Request::get('user_id');
+        $pay_type = Request::get('pay_type');
+        $order_id = 'WZLM' . date('YmdHis') . $user_id . rand(1000, 9999);
+        $client = new Client();
+        $params = [
+            'partner'     => self::WZLM_MCH_ID,
+            'timestamp'   => time(),
+            'orderNumber' => $order_id,
+            'payWayID'    => $pay_type,
+            'type'        => 0,//0-rmb 1-usdt
+            'amount'      => $amount,
+        ];
+        $response = $client->request('POST', self::WZLM_PAY_GATEWAY, [
+            'json' => [
+                'method' => 'payway',
+                'param'  => $this->getWZLMSign($params),
+            ]
+        ]);
+        $contents = $response->getBody()->getContents();
+        dd($contents);
+        cache($order_id, $user_id);
+    }
+
+    public function wzlm_notify()
+    {
+        $params = Request::param();
+        var_dump($params);
+        Log::info($params);
+        $params = json_decode($params, true);
+        if (empty($params['sign']) || $this->getWZLMSign($params, true) != $params['sign']) {
+            Log::info('验签错误' . $params['sign']);
+            return 'failed';
+        }
+        $order_id = $params['orderNumber'] ?? 0;
+        if ($user_id = cache($order_id)) {
+            //订单状态 2已支付 3异常 4已关闭 5用户取消支付
+            if (in_array($params['status'], [2, 4, 5])) {
+                //清除缓存
+                cache($order_id, null);
+            }
+            if ($params['status'] == 2) {
+                $amount = (int)$params['amount'];
+                $this->sendServer([
+                    //玩具ID
+                    "playerid" => $user_id,
+                    "time"     => date('Y-m-d H:i:s'),
+                    //订单号
+                    "serial"   => $order_id,
+                    //固定值
+                    "currency" => 100,
+                    //房卡数量
+                    "amount"   => self::CARD_CONFIG[$amount] ?? 0,
+                    //支付金额
+                    "cost"     => $amount ?? 0
+                ]);
+            }
+        }
+        return 'success';
     }
 }

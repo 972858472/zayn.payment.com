@@ -10,20 +10,20 @@
 <body>
 <div id="app">
     <van-form style="width: 340px;margin: auto">
-        <van-row type="flex" justify="space-between">
+        <van-row>
             <van-button class="button product" :plain="index != form.amount" type="danger"
                         v-for="(desc,index) in amount_config"
-                        @click="changeAmount(index)">{{desc}}
+                        @click="changeAmount(index)">{{index}}元<br>{{desc}}金币
             </van-button>
         </van-row>
-        <van-row type="flex" align="center">
+        <van-row type="flex" align="center" v-show="false">
             <van-row class="label">用户ID</van-row>
             <van-row>
                 <van-field style="width: 180px" v-model="form.user_id" disabled readonly placeholder="用户ID"/>
             </van-row>
         </van-row>
 
-        <van-row type="flex" align="center">
+        <van-row>
             <van-row class="label">支付方式</van-row>
             <van-row type="flex">
                 <van-button :plain="index != form.pay_type" type="primary" v-for="(desc,index) in pay_type_config"
@@ -51,15 +51,11 @@
         el: '#app',
         data: function () {
             return {
-                amount_config: {
-                    100: '房卡' + '{:$CARD_CONFIG[100]}' + '张\r\n100元',
-                    300: '房卡' + '{:$CARD_CONFIG[300]}' + '张\r\n300元',
-                    500: '房卡' + '{:$CARD_CONFIG[500]}' + '张\r\n500元',
-                    1000: '房卡' + '{:$CARD_CONFIG[1000]}' + '张\r\n1000元'
-                },
+                amount_config: {},
                 pay_type_config: {
                     1: '微信',
-                    2: '支付宝'
+                    2: '银行卡',
+                    3: 'usdt'
                 },
                 form: {
                     user_id: '{$user_id}',
@@ -68,19 +64,16 @@
                 }
             }
         },
+        mounted: function () {
+            //初始化配置
+            let amount_config = '{:json_encode($CARD_CONFIG)}'
+            this.amount_config = JSON.parse(amount_config)
+
+        },
         methods: {
             onSubmit() {
                 const params = $.param(this.form)
-                switch (this.form.pay_type) {
-                    case '1':
-                        window.location.href = '/wx_pay?' + params
-                        break
-                    case '2':
-                        window.location.href = '/zfb_pay?' + params
-                        break
-                    default:
-                        alert('未知的支付方式')
-                }
+                window.location.href = '/wzlm_pay?' + params
             },
             changeAmount(index) {
                 this.form.amount = index
@@ -118,15 +111,17 @@
     }
 
     .button.product {
-        width: 110px;
-        height: 56px;
-        margin: 15px 0 0 0;
+        width: 90px;
+        height: 42px;
+        margin: 15px 23px 0 0;
         font-size: 12px;
+        border-radius: 10px;
+        font-weight: 600;
     }
 
     .van-button--danger {
         background-color: #f1722d;
-        border: 1px solid #f1722d;
+        border: 2px solid #f1722d;
         color: #fff;
     }
 

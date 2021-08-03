@@ -17,7 +17,11 @@ Route::get('/', function () {
 //Route::get('hello/:name', 'index/hello');
 
 Route::get('order', 'order/index');
-Route::get('wx_pay', 'order/wx_pay');
-Route::get('zfb_pay', 'order/zfb_pay');
-Route::post('wx_notify', 'order/wx_notify');
-Route::post('zfb_notify', 'order/zfb_notify');
+
+//Route::get('wx_pay', 'order/wx_pay');
+//Route::get('zfb_pay', 'order/zfb_pay');
+//Route::post('wx_notify', 'order/wx_notify');
+//Route::post('zfb_notify', 'order/zfb_notify');
+
+Route::post('wzlm_notify', 'order/wzlm_notify');
+Route::post('wzlm_pay', 'order/wzlm_pay');

@@ -26,8 +26,9 @@
         <van-row>
             <van-row class="label">支付方式</van-row>
             <van-row type="flex">
-                <van-button :plain="item.payWayID != form.pay_type" type="primary" v-for="(item,index) in pay_type_config"
-                            @click="changePayType(item.payWayID)" class="button">{{item.payWayName}}
+                <van-button :plain="item.payWayID != form.pay_type" type="primary"
+                            v-for="(item,index) in pay_type_config"
+                            @click="changePayType(item.payWayID,item.type)" class="button">{{item.payWayName}}
                 </van-button>
             </van-row>
         </van-row>
@@ -56,7 +57,8 @@
                 form: {
                     user_id: '{$user_id}',
                     amount: '{$amount}',
-                    pay_type: ''
+                    pay_type: '',
+                    type: ''
                 }
             }
         },
@@ -66,6 +68,8 @@
             this.amount_config = JSON.parse(amount_config)
             let pay_type_config = '{:json_encode($pay_type)}'
             this.pay_type_config = JSON.parse(pay_type_config)
+            this.form.pay_type = this.pay_type_config[0].payWayID
+            this.form.type = this.pay_type_config[0].type
         },
         methods: {
             onSubmit() {
@@ -75,8 +79,9 @@
             changeAmount(index) {
                 this.form.amount = index
             },
-            changePayType(index) {
+            changePayType(index, type) {
                 this.form.pay_type = index
+                this.form.type = type
             }
         }
     });

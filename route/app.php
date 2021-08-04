@@ -23,5 +23,6 @@ Route::get('order', 'order/index');
 //Route::post('wx_notify', 'order/wx_notify');
 //Route::post('zfb_notify', 'order/zfb_notify');
 
+Route::get('wzlm_pay', 'order/wzlm_pay');
 Route::post('wzlm_notify', 'order/wzlm_notify');
-Route::post('wzlm_pay', 'order/wzlm_pay');
+

@@ -51,7 +51,6 @@ class Order extends BaseController
         $data['amount'] = Request::get('amount', 300);
         $contents = $this->getWZLMPayList();
         $contents = json_decode($contents, true);
-        var_dump($contents);
         if ($contents['code'] != 0) {
             return $contents['msg'];
         }
@@ -306,11 +305,17 @@ class Order extends BaseController
         return $params;
     }
 
+    /**
+     * 王者联盟支付
+     * @return mixed|void
+     * @throws GuzzleException
+     */
     public function wzlm_pay()
     {
         $amount = Request::get('amount');
         $user_id = Request::get('user_id');
         $pay_type = Request::get('pay_type');
+        $type = Request::get('type', 0);
         $order_id = 'WZLM' . date('YmdHis') . $user_id . rand(1000, 9999);
         $client = new Client(['timeout' => 5]);
         $params = [
@@ -318,18 +323,26 @@ class Order extends BaseController
             'timestamp'   => time(),
             'orderNumber' => $order_id,
             'payWayID'    => $pay_type,
-            'type'        => 0,//0-rmb 1-usdt
+            'type'        => $type,//0-rmb 1-usdt
             'amount'      => $amount,
         ];
         $response = $client->request('POST', self::WZLM_PAY_GATEWAY, [
             'json' => [
-                'method' => 'payway',
+                'method' => 'recharge',
                 'param'  => $this->getWZLMSign($params),
             ]
         ]);
         $contents = $response->getBody()->getContents();
-        dd($contents);
-        cache($order_id, $user_id);
+        $contents = json_decode($contents, true);
+        if ($contents['code'] == 0 && !empty($contents['data']['paymentInfo'])) {
+            cache($order_id, [
+                'user_id' => $user_id,
+                'gold'    => self::CARD_CONFIG[$amount]
+            ]);
+            return \redirect($contents['data']['paymentInfo']);
+        } else {
+            return $contents['msg'];
+        }
     }
 
     public function wzlm_notify()
@@ -343,26 +356,26 @@ class Order extends BaseController
             return 'failed';
         }
         $order_id = $params['orderNumber'] ?? 0;
-        if ($user_id = cache($order_id)) {
+        if ($order_info = cache($order_id)) {
             //订单状态 2已支付 3异常 4已关闭 5用户取消支付
             if (in_array($params['status'], [2, 4, 5])) {
                 //清除缓存
                 cache($order_id, null);
             }
             if ($params['status'] == 2) {
-                $amount = (int)$params['amount'];
+                $gold = $order_info['gold'] ?? 0;
                 $this->sendServer([
                     //玩具ID
-                    "playerid" => $user_id,
+                    "playerid" => $order_info['user_id'] ?? 0,
                     "time"     => date('Y-m-d H:i:s'),
                     //订单号
                     "serial"   => $order_id,
                     //固定值
                     "currency" => 100,
                     //房卡数量
-                    "amount"   => self::CARD_CONFIG[$amount] ?? 0,
+                    "amount"   => $gold,
                     //支付金额
-                    "cost"     => $amount ?? 0
+                    "cost"     => $params['amount']
                 ]);
             }
         }

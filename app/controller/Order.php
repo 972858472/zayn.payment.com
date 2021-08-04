@@ -275,7 +275,7 @@ class Order extends BaseController
      */
     public function getWZLMPayList(): string
     {
-        $client = new Client();
+        $client = new Client(['timeout' => 5]);
         $params = [
             'partner'   => self::WZLM_MCH_ID,
             'timestamp' => time()
@@ -311,7 +311,7 @@ class Order extends BaseController
         $user_id = Request::get('user_id');
         $pay_type = Request::get('pay_type');
         $order_id = 'WZLM' . date('YmdHis') . $user_id . rand(1000, 9999);
-        $client = new Client();
+        $client = new Client(['timeout' => 5]);
         $params = [
             'partner'     => self::WZLM_MCH_ID,
             'timestamp'   => time(),

@@ -347,9 +347,13 @@ class Order extends BaseController
 
     public function wzlm_notify()
     {
+        Log::info('post');
         Log::info(Request::post());
+        $input = file_get_contents("php://input");
+        Log::info('input');
+        Log::info($input);
         $params = Request::param();
-        var_dump($params);
+        Log::info('param');
         Log::info($params);
         $params = json_decode($params, true);
         if (empty($params['sign']) || $this->getWZLMSign($params, true) != $params['sign']) {

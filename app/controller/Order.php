@@ -347,6 +347,7 @@ class Order extends BaseController
 
     public function wzlm_notify()
     {
+        Log::info(Request::post());
         $params = Request::param();
         var_dump($params);
         Log::info($params);

@@ -26,8 +26,8 @@
         <van-row>
             <van-row class="label">支付方式</van-row>
             <van-row type="flex">
-                <van-button :plain="index != form.pay_type" type="primary" v-for="(desc,index) in pay_type_config"
-                            @click="changePayType(index)" class="button">{{desc}}
+                <van-button :plain="item.payWayID != form.pay_type" type="primary" v-for="(item,index) in pay_type_config"
+                            @click="changePayType(item.payWayID)" class="button">{{item.payWayName}}
                 </van-button>
             </van-row>
         </van-row>
@@ -52,15 +52,11 @@
         data: function () {
             return {
                 amount_config: {},
-                pay_type_config: {
-                    1: '微信',
-                    2: '银行卡',
-                    3: 'usdt'
-                },
+                pay_type_config: {},
                 form: {
                     user_id: '{$user_id}',
                     amount: '{$amount}',
-                    pay_type: '{$pay_type}'
+                    pay_type: ''
                 }
             }
         },
@@ -68,7 +64,8 @@
             //初始化配置
             let amount_config = '{:json_encode($CARD_CONFIG)}'
             this.amount_config = JSON.parse(amount_config)
-
+            let pay_type_config = '{:json_encode($pay_type)}'
+            this.pay_type_config = JSON.parse(pay_type_config)
         },
         methods: {
             onSubmit() {

@@ -51,6 +51,7 @@ class Order extends BaseController
         $data['amount'] = Request::get('amount', 300);
         $contents = $this->getWZLMPayList();
         $contents = json_decode($contents, true);
+        var_dump($contents);
         if ($contents['code'] != 0) {
             return $contents['msg'];
         }
@@ -299,7 +300,7 @@ class Order extends BaseController
     {
         ksort($params);
         $params['sign'] = md5(http_build_query($params) . self::WZLM_KEY);
-        if (!$isStr) {
+        if ($isStr) {
             return $params['sign'];
         }
         return $params;

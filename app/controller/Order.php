@@ -19,6 +19,7 @@ use think\response\Redirect;
 
 class Order extends BaseController
 {
+    const GAME_SERVER = 'http://66.66.11.20:34001/recharge';
     const WX_MCH_ID = '1518899471';
     const WX_APPID = 'wxe28eb90645d3b9ca';
     const WX_KEY = 'ruVGlUhOpWXTdGW1WH0RwtTT9qU28jTq';
@@ -262,7 +263,7 @@ class Order extends BaseController
     public function sendServer($data)
     {
         $client = new Client();
-        $response = $client->request('POST', 'http://66.66.11.20:34001/recharge', [
+        $response = $client->request('POST', self::GAME_SERVER, [
             'body' => 'businessOrderID=1&parameter=' . json_encode($data, 256)
         ]);
         Log::info($response->getBody()->getContents());

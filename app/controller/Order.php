@@ -29,7 +29,7 @@ class Order extends BaseController
     const ALI_PID = '2088921324464100';
 
     //wangzhelianmeng
-    const WZLM_PAY_GATEWAY = '103.126.249.138:40008/api/gw';
+    const WZLM_PAY_GATEWAY = 'https://sfapi.usdotc.vip/api/gw';
     const WZLM_MCH_ID = 'wangzhelianmeng';
     const WZLM_KEY = '7c8a9929e376ef6d99e4967e48ad9fa6';
 
@@ -286,6 +286,10 @@ class Order extends BaseController
                 'method' => 'payway',
                 'param'  => $this->getWZLMSign($params),
             ]
+        ]);
+        dump([
+            'method' => 'payway',
+            'param'  => $this->getWZLMSign($params),
         ]);
         return $response->getBody()->getContents();
     }

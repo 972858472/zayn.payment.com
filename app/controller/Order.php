@@ -115,7 +115,7 @@ class Order extends BaseController
             $result = \Alipay\EasySDK\Kernel\Factory::payment()
                 ->wap()
                 ->asyncNotify($this->request->domain() . '/zfb_notify')
-                ->optional('passback_params', $user_id . ',' . $amount)
+                ->optional('passback_params', $user_id . ',' . self::CARD_CONFIG[$amount])
                 ->pay('商超-乐果', $order_id, $amount, $this->request->domain() . '/order?user_id=' . $user_id, '');
             $responseChecker = new ResponseChecker();
             //3. 处理响应或异常

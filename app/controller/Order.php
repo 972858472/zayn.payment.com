@@ -30,8 +30,8 @@ class Order extends BaseController
 
     //wangzhelianmeng
     const WZLM_PAY_GATEWAY = '103.126.249.138:40008/api/gw';
-    const WZLM_MCH_ID = 'wangzhe';
-    const WZLM_KEY = '3a0787b268e4fd55e9128ee1c7c0b6e7';
+    const WZLM_MCH_ID = 'wangzhelianmeng';
+    const WZLM_KEY = '7c8a9929e376ef6d99e4967e48ad9fa6';
 
     const CARD_CONFIG = [
         300   => 300,

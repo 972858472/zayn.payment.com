@@ -371,7 +371,7 @@ class Order extends BaseController
                     //订单号
                     "serial"   => $order_id,
                     //固定值
-                    "currency" => 100,
+                    "currency" => 200,
                     //房卡数量
                     "amount"   => $gold,
                     //支付金额

@@ -88,7 +88,7 @@ class Order extends BaseController
             //'spbill_create_ip' => '123.12.12.123', // 可选，如不传该参数，SDK 将会自动获取相应 IP 地址
             'notify_url'   => $this->request->domain() . '/wx_notify', // 支付结果通知网址，如果不设置则会使用配置里的默认地址
             'trade_type'   => 'MWEB', // 请对应换成你的支付方式对应的值类型
-            'attach'       => $user_id . ',' . self::CARD_CONFIG[$amount]
+            'attach'       => $user_id . ',' . 0
         ]);
         if ($result['return_code'] == 'SUCCESS') {
             if ($result['result_code'] == 'SUCCESS') {
@@ -115,7 +115,7 @@ class Order extends BaseController
             $result = \Alipay\EasySDK\Kernel\Factory::payment()
                 ->wap()
                 ->asyncNotify($this->request->domain() . '/zfb_notify')
-                ->optional('passback_params', $user_id . ',' . $amount)
+                ->optional('passback_params', $user_id . ',' . 0)
                 ->pay('商超-乐果', $order_id, $amount, $this->request->domain() . '/order?user_id=' . $user_id, '');
             $responseChecker = new ResponseChecker();
             //3. 处理响应或异常

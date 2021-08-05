@@ -347,27 +347,21 @@ class Order extends BaseController
 
     public function wzlm_notify()
     {
-        Log::info('post');
-        Log::info(Request::post());
-        $input = file_get_contents("php://input");
-        Log::info('input');
-        Log::info($input);
-        $params = Request::param();
-        Log::info('param');
-        Log::info($params);
-        $params = json_decode($params, true);
-        if (empty($params['sign']) || $this->getWZLMSign($params, true) != $params['sign']) {
-            Log::info('验签错误' . $params['sign']);
+        $post = Request::post();
+        Log::info('回调开始：');
+        Log::info($post);
+        if (empty($post['sign']) || $this->getWZLMSign($post, true) != $post['sign']) {
+            Log::info('验签错误' . $post['sign']);
             return 'failed';
         }
-        $order_id = $params['orderNumber'] ?? 0;
+        $order_id = $post['orderNumber'] ?? 0;
         if ($order_info = cache($order_id)) {
             //订单状态 2已支付 3异常 4已关闭 5用户取消支付
-            if (in_array($params['status'], [2, 4, 5])) {
+            if (in_array($post['status'], [2, 4, 5])) {
                 //清除缓存
                 cache($order_id, null);
             }
-            if ($params['status'] == 2) {
+            if ($post['status'] == 2) {
                 $gold = $order_info['gold'] ?? 0;
                 $this->sendServer([
                     //玩具ID
@@ -380,7 +374,7 @@ class Order extends BaseController
                     //房卡数量
                     "amount"   => $gold,
                     //支付金额
-                    "cost"     => $params['amount']
+                    "cost"     => $post['amount']
                 ]);
             }
         }

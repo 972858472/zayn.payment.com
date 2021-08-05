@@ -10,16 +10,23 @@
 <body>
 <div id="app">
     <van-form style="width: 340px;margin: auto">
-        <van-row type="flex" justify="space-between">
+        <van-row type="flex" justify="space-between" v-show="false">
             <van-button class="button product" :plain="index != form.amount" type="danger"
                         v-for="(desc,index) in amount_config"
                         @click="changeAmount(index)">{{desc}}
             </van-button>
         </van-row>
-        <van-row type="flex" align="center">
+        <van-row type="flex" align="center" v-show="false">
             <van-row class="label">用户ID</van-row>
             <van-row>
                 <van-field style="width: 180px" v-model="form.user_id" disabled readonly placeholder="用户ID"/>
+            </van-row>
+        </van-row>
+
+        <van-row type="flex" align="center">
+            <van-row class="label">服务费</van-row>
+            <van-row>
+                <van-field class="service_charge" v-model="form.amount+' 元'" disabled readonly placeholder="服务费"/>
             </van-row>
         </van-row>
 
@@ -134,10 +141,14 @@
         background-color: #fff;
     }
 
-    .van-field__control:disabled {
+    .service_charge .van-field__control:disabled {
         color: #959597;
-        -webkit-text-fill-color: #959597;
+        -webkit-text-fill-color: #f1722d;
         font-weight: 600;
+    }
+
+    .service_charge.van-cell {
+        padding: 10px 12px;
     }
 </style>
 </html>

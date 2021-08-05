@@ -19,7 +19,7 @@ use think\response\Redirect;
 
 class Order extends BaseController
 {
-    const GAME_SERVER = 'http://66.66.11.20:34001/recharge';
+    const GAME_SERVER = 'http://192.168.0.26:34001/recharge';
     const WX_MCH_ID = '1518899471';
     const WX_APPID = 'wxe28eb90645d3b9ca';
     const WX_KEY = 'ruVGlUhOpWXTdGW1WH0RwtTT9qU28jTq';

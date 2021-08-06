@@ -19,7 +19,7 @@ use think\response\Redirect;
 
 class Order extends BaseController
 {
-    const GAME_SERVER = 'http://66.66.11.20:34001/recharge';
+    const GAME_SERVER = 'http://66.66.11.20:34001/platformfee';
     const WX_MCH_ID = '1518899471';
     const WX_APPID = 'wxe28eb90645d3b9ca';
     const WX_KEY = 'ruVGlUhOpWXTdGW1WH0RwtTT9qU28jTq';
@@ -37,11 +37,14 @@ class Order extends BaseController
 
     public function index()
     {
-        if (!$data['user_id'] = Request::get('user_id')) {
+        if (!$data['userid'] = Request::get('userid')) {
             return '用户ID不能为空';
         }
-        $data['amount'] = Request::get('amount', 100);
-        $data['pay_type'] = Request::get('pay_type', 1);
+        if (!$data['cost'] = Request::get('cost')) {
+            return '金额不能为空';
+        }
+        $data['clubcode'] = Request::get('clubcode');
+        $data['amount'] = Request::get('amount');
         $data['CARD_CONFIG'] = self::CARD_CONFIG;
         return view('', $data);
     }
@@ -76,19 +79,21 @@ class Order extends BaseController
      */
     public function wx_pay()
     {
-        $amount = Request::get('amount');
-        $user_id = Request::get('user_id');
-        $order_id = 'WX' . date('YmdHis') . $user_id . rand(1000, 9999);
+        $data['cost'] = Request::get('cost');
+        $data['userid'] = Request::get('userid');
+        $data['clubcode'] = Request::get('clubcode');
+        $data['amount'] = Request::get('amount');
+        $order_id = 'WX' . date('YmdHis') . $data['userid'] . rand(1000, 9999);
         $app = $this->getWxApp();
         $result = $app->order->unify([
             'body'         => '商超-乐果',
             'out_trade_no' => $order_id,
-            'total_fee'    => $amount * 100,
+            'total_fee'    => $data['amount'] * 100,
             #'total_fee'    => 1,
             //'spbill_create_ip' => '123.12.12.123', // 可选，如不传该参数，SDK 将会自动获取相应 IP 地址
             'notify_url'   => $this->request->domain() . '/wx_notify', // 支付结果通知网址，如果不设置则会使用配置里的默认地址
             'trade_type'   => 'MWEB', // 请对应换成你的支付方式对应的值类型
-            'attach'       => $user_id . ',' . 0
+            'attach'       => json_encode($data)
         ]);
         if ($result['return_code'] == 'SUCCESS') {
             if ($result['result_code'] == 'SUCCESS') {
@@ -107,16 +112,18 @@ class Order extends BaseController
      */
     public function zfb_pay()
     {
-        $amount = Request::get('amount');
-        $user_id = Request::get('user_id');
-        $order_id = 'ALI' . date('YmdHis') . $user_id . rand(1000, 9999);
+        $data['cost'] = Request::get('cost');
+        $data['userid'] = Request::get('userid');
+        $data['clubcode'] = Request::get('clubcode');
+        $data['amount'] = Request::get('amount');
+        $order_id = 'ALI' . date('YmdHis') . $data['userid'] . rand(1000, 9999);
         \Alipay\EasySDK\Kernel\Factory::setOptions($this->getAliOptions());
         try {
             $result = \Alipay\EasySDK\Kernel\Factory::payment()
                 ->wap()
                 ->asyncNotify($this->request->domain() . '/zfb_notify')
-                ->optional('passback_params', $user_id . ',' . 0)
-                ->pay('商超-乐果', $order_id, $amount, $this->request->domain() . '/order?user_id=' . $user_id, '');
+                ->optional('passback_params', json_encode($data))
+                ->pay('商超-乐果', $order_id, $data['cost'], $this->request->domain() . '/order?user_id=' . $data['userid'], '');
             $responseChecker = new ResponseChecker();
             //3. 处理响应或异常
             if ($responseChecker->success($result)) {
@@ -179,21 +186,10 @@ class Order extends BaseController
             $response = $app->handlePaidNotify(function ($message, $fail) {
                 Log::info('微信回调开始：');
                 Log::info($message);
-                $cost = $message['total_fee'] / 100;
-                $params = explode(',', $message['attach']);
-                $this->sendServer([
-                    //玩具ID
-                    "playerid" => $params[0] ?? 0,
-                    "time"     => date('Y-m-d H:i:s'),
-                    //订单号
-                    "serial"   => $message['out_trade_no'] ?? null,
-                    //固定值
-                    "currency" => 100,
-                    //房卡数量
-                    "amount"   => $params[1] ?? 0,
-                    //支付金额
-                    "cost"     => $cost ?? 0
-                ]);
+                $params = json_decode($message['attach'], true);
+                $params['currency'] = 400;
+                $params['serial'] = $message['out_trade_no'] ?? null;
+                $this->sendServer($params);
                 return true;
             });
             $response->send();
@@ -218,20 +214,10 @@ class Order extends BaseController
             Log::info($post);
             \Alipay\EasySDK\Kernel\Factory::setOptions($this->getAliOptions());
             \Alipay\EasySDK\Kernel\Factory::payment()->common()->verifyNotify($post);
-            $params = explode(',', $post['passback_params']);
-            $this->sendServer([
-                //玩具ID
-                "playerid" => $params[0] ?? 0,
-                "time"     => date('Y-m-d H:i:s'),
-                //订单号
-                "serial"   => $post['out_trade_no'] ?? null,
-                //固定值
-                "currency" => 100,
-                //房卡数量
-                "amount"   => $params[1] ?? 0,
-                //支付金额
-                "cost"     => $post['total_amount'] ?? 0
-            ]);
+            $params = json_decode($post['passback_params'], true);
+            $params['currency'] = 400;
+            $params['serial'] = $post['out_trade_no'] ?? null;
+            $this->sendServer($params);
             return 'success';
         } catch (Exception $e) {
             Log::info('支付宝回调错误：' . $e->getMessage() . ':' . $e->getFile() . ':' . $e->getCode());

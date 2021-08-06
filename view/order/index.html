@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
 </head>
 <body>
+<h3 style="text-align: center">服务费支付</h3>
 <div id="app">
     <van-form style="width: 340px;margin: auto">
         <van-row type="flex" justify="space-between" v-show="false">
@@ -16,24 +17,24 @@
                         @click="changeAmount(index)">{{desc}}
             </van-button>
         </van-row>
-        <van-row type="flex" align="center" v-show="false">
+        <van-row type="flex" align="center">
             <van-row class="label">用户ID</van-row>
             <van-row>
-                <van-field style="width: 180px" v-model="form.user_id" disabled readonly placeholder="用户ID"/>
+                <van-field style="width: 180px" v-model="form.userid" disabled readonly placeholder="用户ID"/>
             </van-row>
         </van-row>
 
         <van-row type="flex" align="center">
             <van-row class="label">服务费</van-row>
             <van-row>
-                <van-field class="service_charge" v-model="form.amount+' 元'" disabled readonly placeholder="服务费"/>
+                <van-field class="service_charge" v-model="form.cost+' 元'" disabled readonly placeholder="服务费"/>
             </van-row>
         </van-row>
 
         <van-row type="flex" align="center">
             <van-row class="label">支付方式</van-row>
             <van-row type="flex">
-                <van-button :plain="index != form.pay_type" type="primary" v-for="(desc,index) in pay_type_config"
+                <van-button :plain="index != pay_type" type="primary" v-for="(desc,index) in pay_type_config"
                             @click="changePayType(index)" class="button">{{desc}}
                 </van-button>
             </van-row>
@@ -64,21 +65,23 @@
                     500: '房卡' + '{:$CARD_CONFIG[500]}' + '张\r\n500元',
                     1000: '房卡' + '{:$CARD_CONFIG[1000]}' + '张\r\n1000元'
                 },
+                pay_type: 1,
                 pay_type_config: {
                     1: '微信',
                     2: '支付宝'
                 },
                 form: {
-                    user_id: '{$user_id}',
+                    userid: '{$userid}',
                     amount: '{$amount}',
-                    pay_type: '{$pay_type}'
+                    clubcode: '{$clubcode}',
+                    cost: '{$cost}',
                 }
             }
         },
         methods: {
             onSubmit() {
                 const params = $.param(this.form)
-                switch (this.form.pay_type) {
+                switch (this.pay_type) {
                     case '1':
                         window.location.href = '/wx_pay?' + params
                         break
@@ -93,7 +96,7 @@
                 this.form.amount = index
             },
             changePayType(index) {
-                this.form.pay_type = index
+                this.pay_type = index
             }
         }
     });
@@ -144,6 +147,9 @@
     .service_charge .van-field__control:disabled {
         color: #959597;
         -webkit-text-fill-color: #f1722d;
+    }
+
+    .van-field__control:disabled {
         font-weight: 600;
     }
 

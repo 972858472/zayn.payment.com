@@ -65,7 +65,7 @@
                     500: '房卡' + '{:$CARD_CONFIG[500]}' + '张\r\n500元',
                     1000: '房卡' + '{:$CARD_CONFIG[1000]}' + '张\r\n1000元'
                 },
-                pay_type: 1,
+                pay_type: '1',
                 pay_type_config: {
                     1: '微信',
                     2: '支付宝'
@@ -82,10 +82,10 @@
             onSubmit() {
                 const params = $.param(this.form)
                 switch (this.pay_type) {
-                    case 1:
+                    case '1':
                         window.location.href = '/wx_pay?' + params
                         break
-                    case 2:
+                    case '2':
                         window.location.href = '/zfb_pay?' + params
                         break
                     default:

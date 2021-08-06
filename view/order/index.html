@@ -82,10 +82,10 @@
             onSubmit() {
                 const params = $.param(this.form)
                 switch (this.pay_type) {
-                    case '1':
+                    case 1:
                         window.location.href = '/wx_pay?' + params
                         break
-                    case '2':
+                    case 2:
                         window.location.href = '/zfb_pay?' + params
                         break
                     default:

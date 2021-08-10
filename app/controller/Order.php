@@ -188,6 +188,7 @@ class Order extends BaseController
                 Log::info($message);
                 $params = json_decode($message['attach'], true);
                 $params['currency'] = 400;
+                $params['time'] = date('Y-m-d H:i:s');
                 $params['serial'] = $message['out_trade_no'] ?? null;
                 $this->sendServer($params);
                 return true;
@@ -216,6 +217,7 @@ class Order extends BaseController
             \Alipay\EasySDK\Kernel\Factory::payment()->common()->verifyNotify($post);
             $params = json_decode($post['passback_params'], true);
             $params['currency'] = 400;
+            $params['time'] = date('Y-m-d H:i:s');
             $params['serial'] = $post['out_trade_no'] ?? null;
             $this->sendServer($params);
             return 'success';

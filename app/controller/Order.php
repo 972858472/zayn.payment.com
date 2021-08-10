@@ -28,6 +28,8 @@ class Order extends BaseController
     const ALI_APP_ID = '2019032563707127';
     const ALI_PID = '2088921324464100';
 
+    const MCH_NAME = '商超-亲友共享';
+
     const CARD_CONFIG = [
         100  => 1000,
         300  => 3000,
@@ -86,7 +88,7 @@ class Order extends BaseController
         $order_id = 'WX' . date('YmdHis') . $data['userid'] . rand(1000, 9999);
         $app = $this->getWxApp();
         $result = $app->order->unify([
-            'body'         => '商超-乐果',
+            'body'         => self::MCH_NAME,
             'out_trade_no' => $order_id,
             'total_fee'    => $data['cost'] * 100,
             #'total_fee'    => 1,
@@ -123,7 +125,7 @@ class Order extends BaseController
                 ->wap()
                 ->asyncNotify($this->request->domain() . '/zfb_notify')
                 ->optional('passback_params', json_encode($data))
-                ->pay('商超-乐果', $order_id, $data['cost'], $this->request->domain() . '/order?user_id=' . $data['userid'], '');
+                ->pay(self::MCH_NAME, $order_id, $data['cost'], $this->request->domain() . '/order?user_id=' . $data['userid'], '');
             $responseChecker = new ResponseChecker();
             //3. 处理响应或异常
             if ($responseChecker->success($result)) {

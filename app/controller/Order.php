@@ -19,19 +19,19 @@ use think\response\Redirect;
 
 class Order extends BaseController
 {
-    const GAME_SERVER = 'http://192.168.0.26:34001/recharge';
-    const WX_MCH_ID = '1518899471';
-    const WX_APPID = 'wxe28eb90645d3b9ca';
-    const WX_KEY = 'ruVGlUhOpWXTdGW1WH0RwtTT9qU28jTq';
-    const WX_SECRET = 'a1a2f9578d9e67f6051e10559c0692ca';
+    const GAME_SERVER = 'http://****';
+    const WX_MCH_ID = '***';
+    const WX_APPID = '****';
+    const WX_KEY = '***';
+    const WX_SECRET = '****';
 
-    const ALI_APP_ID = '2019032563707127';
-    const ALI_PID = '2088921324464100';
+    const ALI_APP_ID = '***';
+    const ALI_PID = '*******';
 
     //wangzhelianmeng
-    const WZLM_PAY_GATEWAY = 'https://sfapi.usdotc.vip/api/gw';
-    const WZLM_MCH_ID = 'wangzhelianmeng';
-    const WZLM_KEY = '7c8a9929e376ef6d99e4967e48ad9fa6';
+    const WZLM_PAY_GATEWAY = 'https://******';
+    const WZLM_MCH_ID = '***';
+    const WZLM_KEY = '*****';
 
     const CARD_CONFIG = [
         300   => 300,
@@ -95,7 +95,7 @@ class Order extends BaseController
         $order_id = 'WX' . date('YmdHis') . $user_id . rand(1000, 9999);
         $app = $this->getWxApp();
         $result = $app->order->unify([
-            'body'         => '商超-乐果',
+            'body'         => '****',
             'out_trade_no' => $order_id,
             'total_fee'    => $amount * 100,
             #'total_fee'    => 1,

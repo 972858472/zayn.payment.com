@@ -19,15 +19,15 @@ use think\response\Redirect;
 
 class Order extends BaseController
 {
-    const GAME_SERVER = 'http://66.66.11.20:34001/recharge';
-    const WX_MCH_ID = '1518899471';
-    const WX_APPID = 'wxe28eb90645d3b9ca';
-    const WX_KEY = 'ruVGlUhOpWXTdGW1WH0RwtTT9qU28jTq';
-    const WX_SECRET = 'a1a2f9578d9e67f6051e10559c0692ca';
+    const GAME_SERVER = 'http://*******';
+    const WX_MCH_ID = '*****';
+    const WX_APPID = '*****';
+    const WX_KEY = '*****';
+    const WX_SECRET = '*******';
 
-    const ALI_APP_ID = '2019032563707127';
-    const ALI_PID = '2088921324464100';
-    const MCH_NAME = '商超-亲友共享';
+    const ALI_APP_ID = '*******';
+    const ALI_PID = '*******';
+    const MCH_NAME = '名称';
 
     const CARD_CONFIG = [
         100  => 1000,
